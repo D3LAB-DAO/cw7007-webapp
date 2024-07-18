@@ -19,6 +19,7 @@ export default {
       gasPrice: GasPrice.fromString(
         "0" + ConstantineInfo.currencies[0].coinMinimalDenom
       ),
+      // gasPrice: GasPrice.fromString("0.05const"), // TODO: premium
     };
   },
   mounted() {
@@ -87,7 +88,9 @@ export default {
       return queryResult ? queryResult : null;
     },
     async mintNft(input) {
-      const executeFee = calculateFee(300_000, this.gasPrice);
+      let executeFee = calculateFee(300_000, this.gasPrice);
+      console.log("executeFee:", executeFee);
+
       const msg = {
         mint: {
           token_id: "0", // has no meaning
