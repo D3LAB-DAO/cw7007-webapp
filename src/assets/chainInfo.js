@@ -2,7 +2,7 @@ export const ConstantineInfo = {
     // Chain-id of the Cosmos SDK chain.
     chainId: "archway-1",
     // The name of the chain to be displayed to the user.
-    chainName: "Archway (Testnet)",
+    chainName: "Archway",
     // RPC endpoint of the chain.
     rpc: "https://rpc.mainnet.archway.io:443",
     // REST endpoint of the chain.

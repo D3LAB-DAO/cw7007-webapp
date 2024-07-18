@@ -11,7 +11,7 @@ export default {
   },
   computed: {
     explorerUrl() {
-      return `https://www.mintscan.io/archway-testnet/address/${ContractInfo.contractAddr}`;
+      return `https://www.mintscan.io/archway/address/${ContractInfo.contractAddr}`;
     },
   },
   props: ["type", "msg"],
