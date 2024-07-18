@@ -1,18 +1,20 @@
 export const ConstantineInfo = {
     // Chain-id of the Cosmos SDK chain.
-    chainId: "archway-1",
+    chainId: "constantine-3",
     // The name of the chain to be displayed to the user.
     chainName: "Archway (Testnet)",
     // RPC endpoint of the chain.
-    rpc: "https://rpc.mainnet.archway.io:443",
+    rpc: "https://rpc.constantine.archway.io:443",
+    // rpc: "https://rpc-archway-testnet.mms.team",
     // REST endpoint of the chain.
-    rest: "https://api.mainnet.archway.io",
+    rest: "https://api.constantine.archway.io",
+    // rest: "https://api-archway-testnet.mms.team",
     // Staking coin information
     stakeCurrency: {
         // Coin denomination to be displayed to the user.
         coinDenom: "CONST",
         // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-        coinMinimalDenom: "aarch",
+        coinMinimalDenom: "aconst",
         // # of decimal points to convert minimal denomination to user-facing denomination.
         coinDecimals: 18,
         // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
@@ -52,7 +54,7 @@ export const ConstantineInfo = {
             // Coin denomination to be displayed to the user.
             coinDenom: "CONST",
             // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-            coinMinimalDenom: "aarch",
+            coinMinimalDenom: "aconst",
             // # of decimal points to convert minimal denomination to user-facing denomination.
             coinDecimals: 18,
             // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
@@ -66,7 +68,7 @@ export const ConstantineInfo = {
             // Coin denomination to be displayed to the user.
             coinDenom: "CONST",
             // Actual denom (i.e. uatom, uscrt) used by the blockchain.
-            coinMinimalDenom: "aarch",
+            coinMinimalDenom: "aconst",
             // # of decimal points to convert minimal denomination to user-facing denomination.
             coinDecimals: 18,
             // (Optional) Keplr can show the fiat value of the coin if a coingecko id is provided.
@@ -95,5 +97,5 @@ export const ConstantineInfo = {
 
 export const ContractInfo = {
     contractAddr:
-        "archway1swc0w8rqptrqu74h0er7htsh2h62w9exck583lze9pfz9maazu4sdy6r0v",
+        "archway1tn38samd4p6drgwhujmr8ln6vxm8s9xuhw06m8n530ztjqz6xs0s6aydte",
 };

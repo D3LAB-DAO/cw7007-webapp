@@ -180,7 +180,7 @@ export default {
                 } else {
                   reject(
                     new Error(
-                      "Timeout: NFT info image is still null after 30 seconds."
+                      "Timeout: NFT info image is still null after 60 seconds."
                     )
                   );
                 }
