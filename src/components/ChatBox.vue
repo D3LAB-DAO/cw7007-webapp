@@ -163,7 +163,7 @@ export default {
       let words;
 
       const fetchNftInfo = (tokenId) => {
-        const maxRetryTime = 30000; // Maximum retry time (30 seconds)
+        const maxRetryTime = 60000; // Maximum retry time (60 seconds)
         const retryDelay = 2000; // Delay between retries (e.g., 2 seconds)
         const startTime = Date.now();
 
