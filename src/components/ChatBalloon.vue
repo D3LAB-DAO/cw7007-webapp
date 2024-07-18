@@ -86,7 +86,7 @@ export default {
 
 .user {
   color: #ffffffee;
-  background-color: #6944b1;
+  background-color: #FF481E;
   border-radius: 15px 15px 0px 15px;
   right: calc(-100% + 30px);
   transform: translate(-100%, 0%);
@@ -98,9 +98,6 @@ export default {
   border-radius: 40%;
   left: -50px;
   bottom: -20px;
-}
-.demo {
-  color: red;
 }
 .ellipsis {
   width: 5px;

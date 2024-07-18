@@ -217,7 +217,7 @@ export default {
           setTimeout(() => {
             this.chatArray[index - 1].data.content += words[i];
             resolve();
-          }, 30);
+          }, 20);
         });
         this.scrollToBottom(false);
       }
@@ -421,7 +421,7 @@ input:focus {
 
 .connect-button.connected {
   border: 1px solid #ffffff99;
-  color: rgb(32, 6, 71); /* Blank text */
+  color: rgb(0, 0, 0); /* Blank text */
   padding: 10px 20px;
   text-align: center;
   text-decoration: none;
