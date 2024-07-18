@@ -2,23 +2,37 @@
 import axios from "axios";
 import ChatBalloon from "./ChatBalloon.vue";
 import { getChatArray, disclaimerText } from "../assets/chat.js";
-import { ConstantineInfo } from "../assets/chainInfo";
+import { ConstantineInfo, ContractInfo } from "../assets/chainInfo";
 import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import { GasPrice } from "@cosmjs/stargate";
+import { calculateFee, GasPrice } from "@cosmjs/stargate";
 
 export default {
   name: "ChatBox",
   data() {
     return {
       chatArray: getChatArray(),
+      prompt: "",
       inputText: "",
       typing: false,
       keplrAddress: null, // Store Keplr wallet address
       keplrClient: null, // Store Keplr client
+      gasPrice: GasPrice.fromString(
+        "0" + ConstantineInfo.currencies[0].coinMinimalDenom
+      ),
     };
   },
   mounted() {
     this.loadOnMounted();
+  },
+  computed: {
+    placeholderText() {
+      return this.keplrAddress
+        ? "Input your message to mint CW7007 ..."
+        : "Connect wallet first ...";
+    },
+    connectButtonClass() {
+      return this.keplrAddress ? "connected" : "";
+    },
   },
   components: {
     ChatBalloon: ChatBalloon,
@@ -39,14 +53,11 @@ export default {
         ConstantineInfo.chainId
       );
       const accounts = await offlineSigner.getAccounts();
-      const gasPrice = GasPrice.fromString(
-        "0" + ConstantineInfo.currencies[0].coinMinimalDenom
-      );
       const client = await SigningCosmWasmClient.connectWithSigner(
         ConstantineInfo.rpc,
         offlineSigner,
         {
-          gasPrice,
+          gasPrice: this.gasPrice,
         }
       );
 
@@ -57,17 +68,71 @@ export default {
       return `${address.slice(0, 11)}...${address.slice(-4)}`;
     },
 
+    async getPrompt(client) {
+      const queryResult = await this.keplrClient.queryContractSmart(
+        ContractInfo.contractAddr,
+        {
+          prompt: {},
+        }
+      );
+      return queryResult ? queryResult : null;
+    },
+    async getNftInfo(token_id) {
+      const queryResult = await this.keplrClient.queryContractSmart(
+        ContractInfo.contractAddr,
+        {
+          nft_info: { token_id },
+        }
+      );
+      return queryResult ? queryResult : null;
+    },
+    async mintNft(input) {
+      const executeFee = calculateFee(300_000, this.gasPrice);
+      const msg = {
+        mint: {
+          token_id: "0", // has no meaning
+          owner: this.keplrAddress,
+          extension: {
+            description: input,
+          },
+        },
+      };
+      const executeResult = await this.keplrClient.execute(
+        this.keplrAddress,
+        ContractInfo.contractAddr,
+        msg,
+        executeFee
+      );
+      return executeResult ? executeResult : null;
+    },
+
+    // async callChatGPT(apiKey, content) {
+    //   const url = "https://api.openai.com/v1/chat/completions";
+    //   const headers = {
+    //     "Content-Type": "application/json",
+    //     Authorization: `Bearer ${this.apiKey}`,
+    //   };
+    //   const body = JSON.stringify({
+    //     model: "gpt-4o",
+    //     messages: [{ role: "user", content: content }],
+    //     max_tokens: 150,
+    //   });
+    //   const response = await axios.post(url, body, { headers });
+    //   return response.data.choices[0].message.content;
+    // },
+
     async loadOnMounted() {
       this.scrollToBottom(true);
     },
     async send(msg) {
+      if (this.keplrAddress === null) return;
       if (msg === "") return;
       this.inputText = "";
-      await this.pushMsg(msg);
+      const tokenId = await this.pushMsg(msg);
       this.scrollToBottom(true);
       await this.typingMsg();
       this.scrollToBottom(true);
-      await this.postMsg(msg);
+      await this.postMsg(tokenId, msg);
       this.scrollToBottom(true);
     },
     async pushMsg(msg) {
@@ -79,12 +144,61 @@ export default {
           example: false,
         },
       });
+      // TODO: error catch
+      const execRes = await this.mintNft(msg);
+      const tokenId = execRes.logs[0].events
+        .find((e) => e.type === "wasm")
+        .attributes.find((attr) => attr.key === "token_id").value;
+      console.log(`mint tx for ${tokenId}: ${execRes.transactionHash}`);
+      return tokenId;
     },
     async typingMsg() {
       this.typing = true;
     },
-    async postMsg(msg) {
-      let words = `${msg} MEOW.`;
+    async postMsg(tokenId, msg) {
+      let nftInfo;
+      let words;
+
+      const fetchNftInfo = (tokenId) => {
+        const maxRetryTime = 30000; // Maximum retry time (30 seconds)
+        const retryDelay = 2000; // Delay between retries (e.g., 2 seconds)
+        const startTime = Date.now();
+
+        return new Promise(async (resolve, reject) => {
+          const attemptFetch = async () => {
+            try {
+              nftInfo = await this.getNftInfo(tokenId);
+              if (nftInfo.extension.image !== null) {
+                resolve(nftInfo);
+              } else {
+                const elapsedTime = Date.now() - startTime;
+                if (elapsedTime < maxRetryTime) {
+                  setTimeout(attemptFetch, retryDelay);
+                } else {
+                  reject(
+                    new Error(
+                      "Timeout: NFT info image is still null after 30 seconds."
+                    )
+                  );
+                }
+              }
+            } catch (error) {
+              console.error(error);
+              reject(error);
+            }
+          };
+          attemptFetch();
+        });
+      };
+
+      try {
+        nftInfo = await fetchNftInfo(tokenId);
+        words = nftInfo.extension.image;
+      } catch (error) {
+        console.error(error);
+        words = "Meow! Timeout. Try again, please.";
+      }
+
       this.typing = false;
       const index = this.chatArray.push({
         type: "ai",
@@ -103,7 +217,7 @@ export default {
           setTimeout(() => {
             this.chatArray[index - 1].data.content += words[i];
             resolve();
-          }, 50);
+          }, 30);
         });
         this.scrollToBottom(false);
       }
@@ -134,7 +248,11 @@ export default {
   <div>
     <div id="navbar">
       <span class="text">CW7007 CAT</span>
-      <button class="connect-button" @click="connectKeplr">
+      <button
+        class="connect-button"
+        :class="connectButtonClass"
+        @click="connectKeplr"
+      >
         {{ keplrAddress ? formatAddress(keplrAddress) : "Connect Wallet" }}
       </button>
     </div>
@@ -153,7 +271,7 @@ export default {
           <input
             v-model="inputText"
             type="text"
-            placeholder="Input your message to mint CW7007 ..."
+            :placeholder="placeholderText"
             aria-label="Input"
             @keyup.enter="send(inputText)"
           />
@@ -281,7 +399,7 @@ input:focus {
   cursor: pointer;
 }
 
-button.connect-button {
+.connect-button {
   border: 1px solid #ffffff99;
   color: white; /* White text */
   padding: 10px 20px;
@@ -296,10 +414,24 @@ button.connect-button {
   position: absolute;
   right: 30px; /* Position the button to the right */
 }
-button.connect-button:hover {
+.connect-button:hover {
   transform: scale(1.05); /* Slightly larger on hover */
   cursor: pointer; /* Ensures pointer cursor on hover */
 }
-.connect-button {
+
+.connect-button.connected {
+  border: 1px solid #ffffff99;
+  color: rgb(32, 6, 71); /* Blank text */
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 15px; /* Rounded corners */
+  background-color: #ffffff;
+  transition: transform 0.2s; /* Animation */
+  position: absolute;
+  right: 30px; /* Position the but */
 }
 </style>

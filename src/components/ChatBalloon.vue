@@ -1,5 +1,6 @@
 <script>
 import { thinkingMsg } from "../assets/chat.js";
+import { ContractInfo } from "../assets/chainInfo";
 
 export default {
   name: "ChatBalloon",
@@ -7,6 +8,11 @@ export default {
     return {
       thinkingMsg: thinkingMsg,
     };
+  },
+  computed: {
+    explorerUrl() {
+      return `https://www.mintscan.io/archway-testnet/address/${ContractInfo.contractAddr}`;
+    },
   },
   props: ["type", "msg"],
 };
@@ -36,6 +42,15 @@ export default {
         <span>{{ msg }}</span>
       </div>
     </div>
+    <a
+      class="explorer"
+      v-if="type === 'ai'"
+      :href="explorerUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      ↗ Explorer
+    </a>
   </div>
 </template>
 
@@ -56,6 +71,17 @@ export default {
   background-color: #ffffffcc;
   border-radius: 15px 15px 15px 0px;
   left: 65px;
+}
+
+.explorer {
+  padding: 0px 20px 10px 20px;
+  max-width: min(50%, 400px);
+  position: relative;
+  display: inline-block;
+  font-size: 8pt;
+  color: #ffffff;
+  background-color: #ffffff00;
+  left: 45px;
 }
 
 .user {
