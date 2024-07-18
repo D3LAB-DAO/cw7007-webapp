@@ -1,0 +1,112 @@
+<script>
+import { thinkingMsg } from "../assets/chat.js";
+
+export default {
+  name: "ChatBalloon",
+  data() {
+    return {
+      thinkingMsg: thinkingMsg,
+    };
+  },
+  props: ["type", "msg"],
+};
+</script>
+
+<template>
+  <div>
+    <div class="chatballoon-container">
+      <div
+        class="chatballoon"
+        :class="{
+          agent: type === 'ai' || type === 'bubble',
+          user: type === 'human',
+        }"
+      >
+        <div v-if="type === 'bubble'" class="bubble">
+          {{ thinkingMsg + " " }}
+          <div class="ellipsis one"></div>
+          <div class="ellipsis two"></div>
+          <div class="ellipsis three"></div>
+        </div>
+        <img
+          v-if="type === 'ai' || type === 'bubble'"
+          class="profile"
+          src="/profile.webp"
+        />
+        <span>{{ msg }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.chatballoon-container {
+  padding-top: 30px;
+  position: relative;
+}
+.chatballoon {
+  font-size: 0.8rem;
+  padding: 9px 20px 10px 20px;
+  max-width: min(50%, 400px);
+  position: relative;
+  display: inline-block;
+}
+.agent {
+  color: #000000ee;
+  background-color: #ffffffcc;
+  border-radius: 15px 15px 15px 0px;
+  left: 65px;
+}
+
+.user {
+  color: #ffffffee;
+  background-color: #6944b1;
+  border-radius: 15px 15px 0px 15px;
+  right: calc(-100% + 30px);
+  transform: translate(-100%, 0%);
+}
+
+.profile {
+  position: absolute;
+  width: 35px;
+  border-radius: 40%;
+  left: -50px;
+  bottom: -20px;
+}
+.demo {
+  color: red;
+}
+.ellipsis {
+  width: 5px;
+  height: 5px;
+  display: inline-block;
+  background: #00000077;
+  border-radius: 50%;
+  animation: bounce 1.3s linear infinite;
+  margin: 1px;
+}
+.one {
+  animation-delay: 0.6s;
+}
+.two {
+  animation-delay: 0.5s;
+}
+.three {
+  animation-delay: 0.8s;
+}
+@keyframes bounce {
+  30% {
+    transform: translateY(-2px);
+  }
+  60% {
+    transform: translateY(0px);
+  }
+  80% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 0.5;
+  }
+}
+</style>
